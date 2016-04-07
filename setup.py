@@ -12,7 +12,7 @@ setup(
     version="0.0.1",
     author='The Atlantic',
     author_email='programmers@theatlantic.com',
-    url='http://github.com/theatlantic/pysilverpop',
+    url='https://github.com/theatlantic/pysilverpop',
     description='Python wrapper for Silverpop.',
     packages=find_packages(),
     include_package_data=True,
