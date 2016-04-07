@@ -2,16 +2,15 @@ from collections import OrderedDict
 from xml.etree import ElementTree
 
 
-def replace_in_nested_mapping(mapping, key, value):
+def replace_in_nested_mapping(mapping, values):
     mapping = OrderedDict(mapping)
 
     for mapping_key, mapping_value in mapping.items():
         if isinstance(mapping_value, tuple):
-            mapping[mapping_key] = replace_in_nested_mapping(mapping_value, key, value)
+            mapping[mapping_key] = replace_in_nested_mapping(mapping_value, values)
 
-        if mapping_value == key:
-            mapping[mapping_key] = value
-            break
+        if mapping_value in values:
+            mapping[mapping_key] = values[mapping_value]
 
     return tuple(mapping.items())
 
@@ -35,7 +34,7 @@ def map_to_xml(mapping, root=None):
         if value:
             root.append(tag)
 
-    if envelope:
+    if envelope is not None:
         root = envelope
     return ElementTree.tostring(root)
 

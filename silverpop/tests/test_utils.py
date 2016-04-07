@@ -9,7 +9,7 @@ class TestReplaceNestedMapping(unittest.TestCase):
         mapping = (("ABC", "abc"),)
         expected_mapping = (("ABC", "success"),)
 
-        updated_mapping = replace_in_nested_mapping(mapping, "abc", "success")
+        updated_mapping = replace_in_nested_mapping(mapping, {"abc": "success"})
 
         self.assertEqual(expected_mapping, updated_mapping)
 
@@ -17,7 +17,7 @@ class TestReplaceNestedMapping(unittest.TestCase):
         mapping = (("ABC", "abc"), ("DEF", "def"))
         expected_mapping = (("ABC", "success"), ("DEF", "def"))
 
-        updated_mapping = replace_in_nested_mapping(mapping, "abc", "success")
+        updated_mapping = replace_in_nested_mapping(mapping, {"abc": "success"})
 
         self.assertEqual(expected_mapping, updated_mapping)
 
@@ -25,7 +25,7 @@ class TestReplaceNestedMapping(unittest.TestCase):
         mapping = (("ABC", (("DEF", "ghi"),)),)
         expected_mapping = (("ABC", (("DEF", "success"),)),)
 
-        updated_mapping = replace_in_nested_mapping(mapping, "ghi", "success")
+        updated_mapping = replace_in_nested_mapping(mapping, {"ghi": "success"})
 
         self.assertEqual(expected_mapping, updated_mapping)
 

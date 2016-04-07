@@ -1,5 +1,4 @@
 import inspect
-from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
 
@@ -9,7 +8,8 @@ class api_method(object):
     """
     The `api_method` decorator tries to simplify declaring most of the methods
     in the API wrapper. The majority of the methods in the Silverpop API have a
-    simple XML tag/value system and repeating the logic across 
+    simple XML tag/value system and repeating the logic across a thousand lines
+    is gonna cause problems.
     """
     def __init__(self, cmd_name, definition=()):
         self.cmd_name = cmd_name
@@ -29,7 +29,7 @@ class api_method(object):
         # Preserve the argument signature of the wrapped function.
         # fullargspec preserves the defaults while argspec does not.
         full_argspec = inspect.formatargspec(*argspec)
-        non_default_argspec = inspect.formatargspec(argspec[0])
+        non_default_argspec = inspect.formatargspec(argspec.args)
 
         new_func = ("def %s%s:\n"
                     "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
@@ -41,11 +41,7 @@ class api_method(object):
         return exec_scope[func.__name__]
 
     def _build_tree(self, **kwargs):
-        # Iterate over scope definitions.
-        definition = self.definition
-        for key, value in kwargs.iteritems():
-            definition = replace_in_nested_mapping(definition, key, value)
-
+        definition = replace_in_nested_mapping(self.definition, kwargs)
         return map_to_xml(definition)
 
 
