@@ -3,24 +3,33 @@ from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
 
+from .utils import replace_in_nested_mapping, map_to_xml
+
 class api_method(object):
+    """
+    The `api_method` decorator tries to simplify declaring most of the methods
+    in the API wrapper. The majority of the methods in the Silverpop API have a
+    simple XML tag/value system and repeating the logic across 
+    """
     def __init__(self, cmd_name, definition=()):
         self.cmd_name = cmd_name
         self.definition = definition
 
     def __call__(self, func):
         outer_self = self
+        argspec = inspect.getargspec(func)
 
         def wrapper(self, *args, **kwargs):
-            values = zip(outer_self.definition, args)
+            # Name the args via zip and then put them in the kwargs.
+            values = zip(argspec.args[1:], args)
             kwargs.update(values)
             tree = outer_self._build_tree(**kwargs)
-            self._call(tree)
+            return self._call(tree)
 
         # Preserve the argument signature of the wrapped function.
         # fullargspec preserves the defaults while argspec does not.
-        full_argspec = inspect.formatargspec(*inspect.getargspec(func))
-        non_default_argspec = inspect.formatargspec(inspect.getargspec(func)[0])
+        full_argspec = inspect.formatargspec(*argspec)
+        non_default_argspec = inspect.formatargspec(argspec[0])
 
         new_func = ("def %s%s:\n"
                     "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
@@ -32,28 +41,12 @@ class api_method(object):
         return exec_scope[func.__name__]
 
     def _build_tree(self, **kwargs):
-        # The base form of the call is <Envelope><Body><CommandName></CommandName></Body></Envelope>
-        envelope = ElementTree.Element("Envelope")
-
-        body = ElementTree.Element("Body")
-        envelope.append(body)
-
-        command = ElementTree.Element(self.cmd_name)
-        body.append(command)
-
         # Iterate over scope definitions.
-        for kwarg_key, tag_name in self.definition:
-            element = ElementTree.Element(tag_name)
-            value = kwargs[kwarg_key]
+        definition = self.definition
+        for key, value in kwargs.iteritems():
+            definition = replace_in_nested_mapping(definition, key, value)
 
-            # Boolean flags do not need text content.
-            if type(value) != bool:
-                element.text = str(value)
-
-            if value:
-                command.append(element)
-
-        return ElementTree.tostring(envelope)
+        return map_to_xml(definition)
 
 
 class Silverpop(object):
@@ -91,15 +84,15 @@ class Silverpop(object):
         return self.session.post(self.api_endpoint, data={"xml": xml})
 
     @api_method("ScheduleMailing", definition=(
-        ("mailingId", "MailingId"),
-        ("recipientEmail", "RecipientEmail"),))
+        ("MailingId", "mailingId"),
+        ("RecipientEmail", "recipientEmail"),))
     def send_mailing(self, mailingId, recipientEmail):
         pass
 
     @api_method("ScheduleMailing", definition=(
-        ("template_id", "TEMPLATE_ID"),
-        ("list_id", "LIST_ID"),
-        ("mailing_name", "MAILING_NAME"),
-        ("send_html", "SEND_HTML"),))
+        ("TEMPLATE_ID", "template_id"),
+        ("LIST_ID", "list_id"),
+        ("MAILING_NAME", "mailing_name"),
+        ("SEND_HTML", "send_html"),))
     def schedule_mailing(self, template_id, list_id, mailing_name, send_html=True):
         pass

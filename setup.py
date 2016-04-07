@@ -23,5 +23,6 @@ setup(
     ],
     classifiers=[
     ],
+    test_suite="silverpop.tests",
 )
 
