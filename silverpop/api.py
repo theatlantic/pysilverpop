@@ -80,7 +80,7 @@ class Silverpop(object):
     def _call(self, xml):
         return self.session.post(self.api_endpoint, data={"xml": xml})
 
-    @api_method("ScheduleMailing", definition=(
+    @api_method("SendMailing", definition=(
         ("MailingId", "mailingId"),
         ("RecipientEmail", "recipientEmail"),))
     def send_mailing(self, mailingId, recipientEmail):
