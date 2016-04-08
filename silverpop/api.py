@@ -101,12 +101,13 @@ class Silverpop(object):
         ("INBOX_MONITOR", "inbox_monitor"),
         ("SEND_TIME_OPTIMIZATION", "send_time_optimization"),
         ("WA_MAILINGLEVEL_CODE", "wa_mailinglevel_code"),
-        #("SUPPRESSION_LISTS", (
-            #("SUPPRESSION_LIST_ID", "suppression_lists"),)),
+        ("SUPPRESSION_LISTS", (
+            ("SUPPRESSION_LIST_ID", "suppression_lists"),)),
         ("PARENT_FOLDER_PATH", "parent_folder_path"),
         ("CREATE_PARENT_FOLDER", "create_parent_folder"),
         ("CUSTOM_OPT_OUT", "custom_opt_out"),
-        # @TODO Add SUBSTITUTIONS
+        ("SUBSTITUTIONS", (
+            ("SUBSTITUTION", "substitutions"),)),
         ))
     def schedule_mailing(self, template_id, list_id, mailing_name,
             send_html=False, send_text=False, subject=None, from_name=None,
@@ -114,5 +115,5 @@ class Silverpop(object):
             inbox_monitor=None, send_time_optimization=None,
             wa_mailinglevel_code=None, suppression_lists=None,
             parent_folder_path=None, create_parent_folder=None,
-            custom_opt_out=None):
+            custom_opt_out=None, substitutions=None):
         pass
