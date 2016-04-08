@@ -15,7 +15,7 @@ def replace_in_nested_mapping(mapping, values):
     return tuple(mapping.items())
 
 
-def map_to_xml(mapping, root=None):
+def map_to_xml(mapping, root=None, command=None):
     envelope = None
 
     if root is None:
@@ -23,13 +23,58 @@ def map_to_xml(mapping, root=None):
         root = ElementTree.Element("Body")
         envelope.append(root)
 
+        if command:
+            command = ElementTree.Element(command)
+            root.append(command)
+
+            root = command
+
     for tag, value in mapping:
         tag = ElementTree.Element(tag)
 
         if type(value) == tuple:
+            # Allow for nesting.
             value = map_to_xml(value, tag)
+        elif type(value) == list:
+            # This conditional lets us expand lists into multiple elements with
+            # the same name:
+            #
+            #    (("test", (("test_child", [1, 2, 3]),)),)
+            #
+            # will be serialized as:
+            #
+            #    <test>
+            #         <test_child>1</test_child>
+            #         <test_child>2</test_child>
+            #         <test_child>3</test_child>
+            #    </test>
+            value_list = tuple((tag.tag, value) for value in value)
+            value = map_to_xml(value_list, root)
+            continue
+        elif type(value) == dict:
+            # This conditional expands dicts into name/value pairs, as required
+            # by some Silverpop method:
+            #
+            #     (("COLUMN", {"a": 1}),)
+            #
+            # will be serialized as:
+            #
+            #     <COLUMN>
+            #         <NAME>a</NAME>
+            #         <VALUE>1</VALUE>
+            #     </COLUMN>
+            value_list = ()
+            for column_name, column_value in value.iteritems():
+                value_list += (((tag.tag), (("NAME", column_name), ("VALUE", column_value))),)
+
+            value = map_to_xml(value_list, root)
+            continue
+
         elif not type(value) == bool:
-            tag.text = value
+            # If the value isn't True/False, we can set the node's text value.
+            # If the value is True, the tag will still be appended but will be
+            # self-closing.
+            tag.text = str(value)
 
         if value:
             root.append(tag)

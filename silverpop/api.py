@@ -11,6 +11,7 @@ class api_method(object):
     simple XML tag/value system and repeating the logic across a thousand lines
     is gonna cause problems.
     """
+
     def __init__(self, cmd_name, definition=()):
         self.cmd_name = cmd_name
         self.definition = definition
@@ -42,7 +43,7 @@ class api_method(object):
 
     def _build_tree(self, **kwargs):
         definition = replace_in_nested_mapping(self.definition, kwargs)
-        return map_to_xml(definition)
+        return map_to_xml(definition, command=self.cmd_name)
 
 
 class Silverpop(object):
@@ -89,6 +90,29 @@ class Silverpop(object):
         ("TEMPLATE_ID", "template_id"),
         ("LIST_ID", "list_id"),
         ("MAILING_NAME", "mailing_name"),
-        ("SEND_HTML", "send_html"),))
-    def schedule_mailing(self, template_id, list_id, mailing_name, send_html=True):
+        ("SEND_HTML", "send_html"),
+        ("SEND_TEXT", "send_text"),
+        ("SUBJECT", "subject"),
+        ("FROM_NAME", "from_name"),
+        ("FROM_ADDRESS", "from_address"),
+        ("REPLY_TO", "reply_to"),
+        ("VISIBILITY", "shared"),
+        ("SCHEDULED", "scheduled"),
+        ("INBOX_MONITOR", "inbox_monitor"),
+        ("SEND_TIME_OPTIMIZATION", "send_time_optimization"),
+        ("WA_MAILINGLEVEL_CODE", "wa_mailinglevel_code"),
+        #("SUPPRESSION_LISTS", (
+            #("SUPPRESSION_LIST_ID", "suppression_lists"),)),
+        ("PARENT_FOLDER_PATH", "parent_folder_path"),
+        ("CREATE_PARENT_FOLDER", "create_parent_folder"),
+        ("CUSTOM_OPT_OUT", "custom_opt_out"),
+        # @TODO Add SUBSTITUTIONS
+        ))
+    def schedule_mailing(self, template_id, list_id, mailing_name,
+            send_html=False, send_text=False, subject=None, from_name=None,
+            from_address=None, reply_to=None, shared=True, scheduled=None,
+            inbox_monitor=None, send_time_optimization=None,
+            wa_mailinglevel_code=None, suppression_lists=None,
+            parent_folder_path=None, create_parent_folder=None,
+            custom_opt_out=None):
         pass
