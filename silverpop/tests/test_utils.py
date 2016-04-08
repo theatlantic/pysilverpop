@@ -44,3 +44,17 @@ class TestMapToXml(unittest.TestCase):
 
         xml = map_to_xml(mapping)
         self.assertEqual(expected_xml, xml)
+
+    def test_list(self):
+        mapping = (("ABC", (("DEF", [1, 2]),)),)
+        expected_xml = "<Envelope><Body><ABC><DEF>1</DEF><DEF>2</DEF></ABC></Body></Envelope>"
+
+        xml = map_to_xml(mapping)
+        self.assertEqual(expected_xml, xml)
+
+    def test_dict(self):
+        mapping = (("ABC", (("DEF", {"a": 1}),)),)
+        expected_xml = "<Envelope><Body><ABC><DEF><NAME>a</NAME><VALUE>1</VALUE></DEF></ABC></Body></Envelope>"
+
+        xml = map_to_xml(mapping)
+        self.assertEqual(expected_xml, xml)
