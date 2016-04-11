@@ -7,10 +7,7 @@ def replace_in_nested_mapping(mapping, values):
     Recursively replace "variable names" (strings that have the same value as
     keys in a dict) with their values in a nested 2-tuple mapping.
     """
-    try:
-        mapping = OrderedDict(mapping)
-    except ValueError:
-        import ipdb; ipdb.set_trace()
+    mapping = OrderedDict(mapping)
 
     for mapping_key, mapping_value in mapping.items():
         if isinstance(mapping_value, tuple):
