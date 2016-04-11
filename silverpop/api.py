@@ -117,3 +117,65 @@ class Silverpop(object):
             parent_folder_path=None, create_parent_folder=None,
             custom_opt_out=None, substitutions=None):
         pass
+
+    @api_method("AddRecipient", definition=(
+        ("LIST_ID", "list_id"),
+        ("CREATED_FROM", "created_from"),
+        ("SEND_AUTOREPLY", "send_autoreply"),
+        ("UPDATE_IF_FOUND", "update_if_found"),
+        ("ALLOW_HTML", "allow_html"),
+        ("VISITOR_KEY", "visitor_key"),
+        ("CONTACT_LISTS", (
+            ("CONTACT_LIST", "contact_lists"),)),
+        ("HONOR_OPTOUT_STATUS", "honor_optout_status"),
+        ("SYNC_FIELDS", (
+            ("SYNC_FIELD", "sync_fields"),)),
+        ("COLUMN", "columns"),
+        ))
+    def add_recipient(self, list_id, created_from, send_autoreply=False,
+            update_if_found=False, allow_html=False, visitor_key=None,
+            contact_lists=None, honor_optout_status=False, sync_fields=None,
+            columns=None):
+        pass
+
+
+    @api_method("SaveMailing", definition=(
+        ("Header", (
+            ("MailingName", "mailing_name"),
+            ("MailingID", "mailing_id"),
+            ("Subject", "subject"),
+            ("ListID", "list_id"),
+            ("FromName", "from_name"),
+            ("FromAddress", "from_address"),
+            ("ReplyTo", "reply_to"),
+            ("Visibility", "shared"),
+            ("FolderPath", "folder_path"),
+            ("Encoding", "encoding"),
+            ("TrackingLevel", "tracking_level"),
+            ("ClickHereMessage", "click_here_message"),
+            ("IsCrmTemplate", "is_crm_template"),
+            ("HasSpCrmBlock", "has_sp_crm_block"),
+            ("PersonalFromName", "personal_from_name"),
+            ("PersonalFromAddress", "personal_from_address"),
+            ("PersonalReplyTo", "personal_reply_to"),
+            )),
+        ("MessageBodies", (
+            ("HTMLBody", "html_body"),
+            ("AOLBody", "aol_body"),
+            ("TextBody", "text_body"),
+            )),
+        ("ClickThroughs", (
+            ("ClickThrough", "click_throughs"),
+            )),
+        ("ForwardToFriend", (
+            ("ForwardType", "0"),  # This is a required but static value in the API method.
+            )),
+        ))
+    def save_mailing(self, mailing_name, subject, list_id, from_name,
+            from_address, reply_to, shared, encoding, tracking_level,
+            click_throughs, mailing_id=None, folder_path=None,
+            click_here_message=None, is_crm_template=None,
+            has_sp_crm_block=None, personal_from_name=None,
+            personal_from_address=None, personal_reply_to=None, html_body=None,
+            aol_body=None, text_body=None):
+        pass
