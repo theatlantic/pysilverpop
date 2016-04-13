@@ -55,7 +55,7 @@ class api_method(object):
         return new_func
 
     def build_doc(self, func=None):
-        return ":API Method: %s" % self.cmd_name
+        return ":API Method: %s\n%s\n" % (self.cmd_name, func.__doc__ or "")
 
     def _build_tree(self, **kwargs):
         definition = replace_in_nested_mapping(self.definition, kwargs)
