@@ -1,15 +1,25 @@
 import inspect
+import logging
 
 from requests_oauthlib import OAuth2Session
 
 from .utils import replace_in_nested_mapping, map_to_xml
 
+logger = logging.getLogger(__name__)
+
+
 class api_method(object):
     """
+    :param str cmd_name: The name of the XML method in the Silverpop API.
+    :param tuple definition: The signature of the API method.
+
     The `api_method` decorator tries to simplify declaring most of the methods
     in the API wrapper. The majority of the methods in the Silverpop API have a
     simple XML tag/value system and repeating the logic across a thousand lines
     is gonna cause problems.
+
+    The API is SOAP-like but does not use SOAP namespacing or SOAP discovery.
+
     """
 
     def __init__(self, cmd_name, definition=()):
@@ -36,10 +46,16 @@ class api_method(object):
                     "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
         exec_scope = {"wrapper": wrapper, }
 
+
         # Execute the signature-preserving wrapper function in a dict-based
         # closure and return it.
         exec new_func in exec_scope
-        return exec_scope[func.__name__]
+        new_func = exec_scope[func.__name__]
+        new_func.__doc__ = self.build_doc(func)
+        return new_func
+
+    def build_doc(self, func=None):
+        return ":API Method: %s" % self.cmd_name
 
     def _build_tree(self, **kwargs):
         definition = replace_in_nested_mapping(self.definition, kwargs)
@@ -78,7 +94,10 @@ class Silverpop(object):
                 token=self.token)
 
     def _call(self, xml):
-        return self.session.post(self.api_endpoint, data={"xml": xml})
+        logger.debug("Request: %s" % xml)
+        response = self.session.post(self.api_endpoint, data={"xml": xml})
+        logger.debug("Response: %s" % response.text)
+        return response
 
     @api_method("SendMailing", definition=(
         ("MailingId", "mailingId"),
