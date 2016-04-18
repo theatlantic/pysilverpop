@@ -56,7 +56,7 @@ class api_method(object):
         return new_func
 
     def build_doc(self, func=None):
-        return ":API Method: %s\n%s\n" % (self.cmd_name, func.__doc__ or "")
+        return ":API Method: ``%s``\n%s\n" % (self.cmd_name, func.__doc__ or "")
 
     def _build_tree(self, **kwargs):
         definition = replace_in_nested_mapping(self.definition, kwargs)
@@ -69,6 +69,24 @@ class Silverpop(object):
     :param str client_secret: Silverpop OAuth client secret.
     :param str refresh_token: Silverpop OAuth refersh token.
     :param int server_number: Silverpop auth server number. Interpolated into API subdomain.
+
+    The Silverpop object is a wrapper around Silverpop's XML API. Roughly, the
+    wrapper's methods are underscore-spaced versions of the XML's camel-cased
+    methods (Ex: ``SendMailing`` becomes the Python method ``send_mailing``).
+
+    Arguments passed to the methods are lowercase and underscore-spaced
+    versions of their relative XML arguments with a few common exceptions:
+
+    * ``<Visibility>`` always becomes ``shared``.
+    * For nested lists, the plural is always used: A ``<SUPPRESSION_LIST>``
+      inside ``<SUPPRESSION_LISTS>`` will be set with ``suppression_lists``.
+    * Each ``<Column>`` will always be set with a key/value in a ``dict`` named
+      ``columns``
+
+    .. seealso::
+
+        Every public method on this class uses the :class:`silverpop.api.api_method`
+        decorator.
 
     .. note::
 
