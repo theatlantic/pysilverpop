@@ -58,3 +58,19 @@ class TestMapToXml(unittest.TestCase):
 
         xml = map_to_xml(mapping)
         self.assertEqual(expected_xml, xml)
+
+    def test_key_value_in_list(self):
+        mapping = (("TESTS", (("TEST", [(("a", "b"), ("c", "d")), (("a", "e"), ("c", "f")),]),)),)
+        expected_xml = ("<Envelope><Body><TESTS>"
+                "<TEST>"
+                    "<a>b</a>"
+                    "<c>d</c>"
+                "</TEST>"
+                "<TEST>"
+                    "<a>e</a>"
+                    "<c>f</c>"
+                "</TEST>"
+                "</TESTS></Body></Envelope>")
+
+        xml = map_to_xml(mapping)
+        self.assertEqual(expected_xml, xml)
