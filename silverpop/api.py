@@ -1,5 +1,6 @@
 import inspect
 import logging
+from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
 
@@ -108,8 +109,7 @@ class Silverpop(object):
     def _call(self, xml):
         logger.debug("Request: %s" % xml)
         response = self.session.post(self.api_endpoint, data={"xml": xml})
-        logger.debug("Response: %s" % response.text)
-        return response
+        return ApiResponse(response)
 
     @api_method("SendMailing", definition=(
         ("MailingId", "mailingId"),
@@ -210,3 +210,39 @@ class Silverpop(object):
             personal_from_address=None, personal_reply_to=None, html_body=None,
             aol_body=None, text_body=None):
         pass
+
+    @api_method("CreateContactList", definition=(
+        ("DATABASE_ID", "database_id"),
+        ("CONTACT_LIST_NAME", "contact_list_name"),
+        ("VISIBILITY", "shared"),
+        ("PARENT_FOLDER_ID", "parent_folder_id"),
+        ("PARENT_FOLDER_PATH", "parent_folder_path"),
+        ))
+    def create_contact_list(database_id, contact_list_name, shared,
+            parent_folder_id=None, parent_folder_path=None):
+        pass
+
+    @api_method("AddContactToContactList", definition=(
+        ("CONTACT_LIST_ID", "contact_list_id"),
+        ("CONTACT_ID", "contact_id"),
+        ("COLUMN", "columns"),
+        ))
+    def add_contact_to_contact_list(contact_list_id, contact_id=None,
+            columns=None):
+        pass
+
+
+class SilverpopResponseException(Exception):
+    pass
+
+
+class ApiResponse(object):
+    def __init__(self, response):
+        logger.debug("Response: %s" % response.text)
+        self.response_raw = response.text
+        self.response = ElementTree.fromstring(self.response_raw)
+
+        success_el = self.response.find(".//SUCCESS")
+        if success_el.text.lower() == "false":
+            fault_string = self.response.find(".//Fault/FaultString").text
+            raise SilverpopResponseException(fault_string)
