@@ -218,7 +218,7 @@ class Silverpop(object):
         ("PARENT_FOLDER_ID", "parent_folder_id"),
         ("PARENT_FOLDER_PATH", "parent_folder_path"),
         ))
-    def create_contact_list(database_id, contact_list_name, shared,
+    def create_contact_list(self, database_id, contact_list_name, shared,
             parent_folder_id=None, parent_folder_path=None):
         pass
 
@@ -227,7 +227,7 @@ class Silverpop(object):
         ("CONTACT_ID", "contact_id"),
         ("COLUMN", "columns"),
         ))
-    def add_contact_to_contact_list(contact_list_id, contact_id=None,
+    def add_contact_to_contact_list(self, contact_list_id, contact_id=None,
             columns=None):
         pass
 
