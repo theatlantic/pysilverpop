@@ -63,10 +63,22 @@ class api_method(object):
 
 
 class Silverpop(object):
+    """
+    :param str client_id: Silverpop OAuth client id.
+    :param str client_secret: Silverpop OAuth client secret.
+    :param str refresh_token: Silverpop OAuth refersh token.
+    :param int server_number: Silverpop auth server number. Interpolated into API subdomain.
+
+    .. note::
+
+        Silverpop uses a modified OAuth 2 system that uses a refresh token to
+        retrieve an access token, even for the first grant. Generally, OAuth 2
+        grants an access token and a refresh token initially.
+    """
     oauth_endpoint = "https://api%s.ibmmarketingcloud.com/oauth/token"
     api_endpoint = "https://api%s.ibmmarketingcloud.com/XMLAPI"
 
-    def __init__(self, client_id, client_secret, refresh_token, server_number=5):
+    def __init__(self, client_id, client_secret, refresh_token, server_number):
         self.oauth_endpoint = self.oauth_endpoint % server_number
         self.api_endpoint = self.api_endpoint % server_number
 
