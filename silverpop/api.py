@@ -260,7 +260,16 @@ class ApiResponse(object):
         self.response_raw = response.text
         self.response = ElementTree.fromstring(self.response_raw)
 
-        success_el = self.response.find(".//SUCCESS")
-        if success_el.text.lower() == "false":
-            fault_string = self.response.find(".//Fault/FaultString").text
-            raise SilverpopResponseException(fault_string)
+        # Very rudimentary mapping of response tags and values into the
+        # instance dict. This will probably cause some problems down the line
+        # but I'm not sure what they are yet.
+        results = self.response.find(".//RESULT")
+        if results:
+            for value in results:
+                self.__dict__[value.tag] = value.text
+
+            # If the request was not successful, try to raise a descriptive
+            # error.
+            if getattr(self, "SUCCESS", "false").lower() == "false":
+                fault_string = self.response.find(".//Fault/FaultString").text
+                raise SilverpopResponseException(fault_string)
