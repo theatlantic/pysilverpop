@@ -229,6 +229,12 @@ class Silverpop(object):
             aol_body=None, text_body=None):
         pass
 
+    @api_method("GetListMetaData", definition=(
+        ("LIST_ID", "list_id"),
+        ))
+    def get_list_meta_data(self, list_id):
+        pass
+
     @api_method("CreateContactList", definition=(
         ("DATABASE_ID", "database_id"),
         ("CONTACT_LIST_NAME", "contact_list_name"),
