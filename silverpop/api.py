@@ -187,7 +187,6 @@ class Silverpop(object):
             columns=None):
         pass
 
-
     @api_method("SaveMailing", definition=(
         ("Header", (
             ("MailingName", "mailing_name"),
@@ -222,7 +221,7 @@ class Silverpop(object):
         ))
     def save_mailing(self, mailing_name, subject, list_id, from_name,
             from_address, reply_to, shared, encoding, tracking_level,
-            click_throughs, mailing_id=None, folder_path=None,
+            click_throughs=[], mailing_id=None, folder_path=None,
             click_here_message=None, is_crm_template=None,
             has_sp_crm_block=None, personal_from_name=None,
             personal_from_address=None, personal_reply_to=None, html_body=None,
@@ -255,6 +254,20 @@ class Silverpop(object):
             columns=None):
         pass
 
+    @api_method("SelectRecipientData", definition=(
+        ("LIST_ID", "list_id"),
+        ("EMAIL", "email"),
+        ("RECIPIENT_ID", "recipient_id"),
+        ("ENCODED_RECIPIENT_ID", "encoded_recipient_id"),
+        ("VISITOR_KEY", "visitor_key"),
+        ("RETURN_CONTACT_LISTS", "return_contact_lists"),
+        ("COLUMN", "columns"),
+        ))
+    def select_recipient_data(self, list_id, email=None, recipient_id=None,
+            encoded_recipient_id=None, visitor_key=None,
+            return_contact_lists=False, columns=None):
+        pass
+
 
 class SilverpopResponseException(Exception):
     pass
@@ -270,7 +283,7 @@ class ApiResponse(object):
         # instance dict. This will probably cause some problems down the line
         # but I'm not sure what they are yet.
         results = self.response.find(".//RESULT")
-        if results:
+        if results is not None:
             for value in results:
                 self.__dict__[value.tag] = value.text
 
