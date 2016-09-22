@@ -268,6 +268,89 @@ class Silverpop(object):
             return_contact_lists=False, columns=None):
         pass
 
+    @api_method("GetReportIdByDate", definition=(
+        ("MAILING_ID", "mailing_id"),
+        ("DATE_START", "date_start"),
+        ("DATE_END", "date_end"),))
+    def get_report_id_by_date(self, mailing_id, date_start, date_end):
+        return
+
+    @api_method("GetSentMailingsForOrg", definition=(
+        ("DATE_START", "date_start"),
+        ("DATE_END", "date_end"),
+        ("PRIVATE", "private"),
+        ("SHARED", "shared"),
+        ("SCHEDULED", "scheduled"),
+        ("SENT", "sent"),
+        ("SENDING", "sending"),
+        ("OPTIN_CONFIRMATION", "optin_confirmation"),
+        ("PROFILE_CONFIRMATION", "profile_confirmation"),
+        ("AUTOMATED", "automated"),
+        ("CAMPAIGN_ACTIVE", "campaign_active"),
+        ("CAMPAIGN_COMPLETED", "campaign_completed"),
+        ("CAMPAIGN_CANCELLED", "campaign_cancelled"),
+        ("CAMPAIGN_SCRAPE_TEMPLATE", "campaign_scrape_template"),
+        ("INCLUDE_TAGS", "include_tags"),
+        ("EXCLUDE_ZERO_SENT", "exclude_zero_sent"),
+        ("MAILING_COUNT_ONLY", "mailing_count_only"),
+        ("EXCLUDE_TEST_MAILINGS", "exclude_test_mailings"),
+    ))
+    def get_sent_mailings_for_org(
+            self, date_start, date_end, private=None, shared=None,
+            scheduled=None, sent=None, sending=None, optin_confirmation=None,
+            profile_confirmation=None, automated=None, campaign_active=None,
+            campaign_completed=None, campaign_cancelled=None,
+            campaign_scrape_template=None, include_tags=None,
+            exclude_zero_sent=None, mailing_count_only=None,
+            exclude_test_mailings=None):
+        pass
+
+    @api_method("GetSentMailingsForList", definition=(
+        ("LIST_ID", "list_id"),
+        ("DATE_START", "date_start"),
+        ("DATE_END", "date_end"),
+        ("INCLUDE_CHILDREN", "include_children"),
+        ("PRIVATE", "private"),
+        ("SHARED", "shared"),
+        ("SCHEDULED", "scheduled"),
+        ("SENT", "sent"),
+        ("SENDING", "sending"),
+        ("OPTIN_CONFIRMATION", "optin_confirmation"),
+        ("PROFILE_CONFIRMATION", "profile_confirmation"),
+        ("AUTOMATED", "automated"),
+        ("CAMPAIGN_ACTIVE", "campaign_active"),
+        ("CAMPAIGN_COMPLETED", "campaign_completed"),
+        ("CAMPAIGN_CANCELLED", "campaign_cancelled"),
+        ("CAMPAIGN_SCRAPE_TEMPLATE", "campaign_scrape_template"),
+        ("INCLUDE_TAGS", "include_tags"),
+        ("EXCLUDE_ZERO_SENT", "exclude_zero_sent"),
+        ("MAILING_COUNT_ONLY", "mailing_count_only"),
+        ("EXCLUDE_TEST_MAILINGS", "exclude_test_mailings"),
+    ))
+    def get_sent_mailings_for_list(
+            self, list_id, date_start, date_end, include_children=None,
+            private=None, shared=None, scheduled=None, sent=None, sending=None,
+            optin_confirmation=None, profile_confirmation=None, automated=None,
+            campaign_active=None, campaign_completed=None,
+            campaign_cancelled=None, campaign_scrape_template=None,
+            include_tags=None, exclude_zero_sent=None, mailing_count_only=None,
+            exclude_test_mailings=None):
+        pass
+
+
+    @api_method("GetAggregateTrackingForMailing", definition=(
+        ("MAILING_ID", "mailing_id"),
+        ("REPORT_ID", "report_id"),
+        ("TOP_DOMAIN", "top_domain"),
+        ("INBOX_MONITORING", "inbox_monitoring"),
+        ("PER_CLICK", "per_click"),
+    ))
+    def get_aggregate_tracking_for_mailing(
+            self, mailing_id, report_id, top_domain=None,
+            inbox_monitoring=None, per_click=None):
+        pass
+
+
 
 class SilverpopResponseException(Exception):
     pass
@@ -285,10 +368,26 @@ class ApiResponse(object):
         results = self.response.find(".//RESULT")
         if results is not None:
             for value in results:
-                self.__dict__[value.tag] = value.text
+                if value.tag not in self.__dict__:
+                    self.__dict__[value.tag] = self._process_node(value)
+                else:
+                    if type(self.__dict__[value.tag]) != list:
+                        self.__dict__[value.tag] = [self.__dict__[value.tag]]
+
+                    self.__dict__[value.tag] += [self._process_node(value)]
 
             # If the request was not successful, try to raise a descriptive
             # error.
             if getattr(self, "SUCCESS", "false").lower() == "false":
                 fault_string = self.response.find(".//Fault/FaultString").text
                 raise SilverpopResponseException(fault_string)
+
+    def _process_node(self, element):
+        if element.text.rstrip():
+            return element.text
+
+        value_dict = {}
+        for value in element:
+            value_dict[value.tag] = value.text
+
+        return value_dict
