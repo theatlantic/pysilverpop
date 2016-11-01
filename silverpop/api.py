@@ -47,7 +47,6 @@ class api_method(object):
                     "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
         exec_scope = {"wrapper": wrapper, }
 
-
         # Execute the signature-preserving wrapper function in a dict-based
         # closure and return it.
         exec new_func in exec_scope
@@ -119,10 +118,11 @@ class Silverpop(object):
             self.token = token
 
         # Build our session and assign it to an instance variable.
-        self.session = OAuth2Session(auto_refresh_kwargs=refresh_kwargs,
-                auto_refresh_url=self.oauth_endpoint,
-                token_updater=token_updater,
-                token=self.token)
+        self.session = OAuth2Session(
+            auto_refresh_kwargs=refresh_kwargs,
+            auto_refresh_url=self.oauth_endpoint,
+            token_updater=token_updater,
+            token=self.token)
 
     def _call(self, xml):
         logger.debug("Request: %s" % xml)
@@ -157,14 +157,15 @@ class Silverpop(object):
         ("CUSTOM_OPT_OUT", "custom_opt_out"),
         ("SUBSTITUTIONS", (
             ("SUBSTITUTION", "substitutions"),)),
-        ))
-    def schedule_mailing(self, template_id, list_id, mailing_name,
-            send_html=False, send_text=False, subject=None, from_name=None,
-            from_address=None, reply_to=None, shared=True, scheduled=None,
-            inbox_monitor=None, send_time_optimization=None,
-            wa_mailinglevel_code=None, suppression_lists=None,
-            parent_folder_path=None, create_parent_folder=None,
-            custom_opt_out=None, substitutions=None):
+    ))
+    def schedule_mailing(
+            self, template_id, list_id, mailing_name, send_html=False,
+            send_text=False, subject=None, from_name=None, from_address=None,
+            reply_to=None, shared=True, scheduled=None, inbox_monitor=None,
+            send_time_optimization=None, wa_mailinglevel_code=None,
+            suppression_lists=None, parent_folder_path=None,
+            create_parent_folder=None, custom_opt_out=None,
+            substitutions=None):
         pass
 
     @api_method("AddRecipient", definition=(
@@ -180,11 +181,57 @@ class Silverpop(object):
         ("SYNC_FIELDS", (
             ("SYNC_FIELD", "sync_fields"),)),
         ("COLUMN", "columns"),
-        ))
-    def add_recipient(self, list_id, created_from, send_autoreply=False,
+    ))
+    def add_recipient(
+            self, list_id, created_from, send_autoreply=False,
             update_if_found=False, allow_html=False, visitor_key=None,
             contact_lists=None, honor_optout_status=False, sync_fields=None,
             columns=None):
+        pass
+
+    @api_method("RemoveRecipient", definition=(
+        ("LIST_ID", "list_id"),
+        ("EMAIL", "email"),
+        ("COLUMN", "columns"),
+    ))
+    def remove_recipient(
+            self, list_id, email, columns=None):
+        pass
+
+    @api_method("OptOutRecipient", definition=(
+        ("LIST_ID", "list_id"),
+        ("EMAIL", "email"),
+        ("MAILING_ID", "mailing_id"),
+        ("RECIPIENT_ID", "recipient_id"),
+        ("JOB_ID", "job_id"),
+    ))
+    def opt_out_recipient(
+            self, list_id, email=None, mailing_id=None, recipient_id=None,
+            job_id=None):
+        pass
+
+    @api_method("UpdateRecipient", definition=(
+        ("LIST_ID", "list_id"),
+        ("OLD_EMAIL", "old_email"),
+        ("RECIPIENT_ID", "recipient_id"),
+        ("ENCODED_RECIPIENT_ID", "encoded_recipient_id"),
+        ("SEND_AUTOREPLY", "send_autoreply"),
+        ("ALLOW_HTML", "allow_html"),
+        ("VISITOR_KEY", "visitor_key"),
+        ("SYNC_FIELDS", "sync_fields"),
+        ("COLUMN", "columns"),
+        ("SNOOZE_SETTINGS", (
+            ("SNOOZED", "snoozed"),
+            ("RESUME_SEND_DATE", "resume_send_date"),
+            ("DAYS_TO_SNOOZE", "days_to_snooze"),
+        ))
+    ))
+    def update_recipient(
+            self, list_id, old_email=None, recipient_id=None,
+            encoded_recipient_id=None, send_autoreply=None, allow_html=None,
+            visitor_key=None, sync_fields=None, columns=None, snoozed=None,
+            resume_send_date=None, days_to_snooze=None,
+    ):
         pass
 
     @api_method("SaveMailing", definition=(
@@ -206,31 +253,32 @@ class Silverpop(object):
             ("PersonalFromName", "personal_from_name"),
             ("PersonalFromAddress", "personal_from_address"),
             ("PersonalReplyTo", "personal_reply_to"),
-            )),
+        )),
         ("MessageBodies", (
             ("HTMLBody", "html_body"),
             ("AOLBody", "aol_body"),
             ("TextBody", "text_body"),
-            )),
+        )),
         ("ClickThroughs", (
             ("ClickThrough", "click_throughs"),
-            )),
+        )),
         ("ForwardToFriend", (
             ("ForwardType", "0"),  # This is a required but static value in the API method.
-            )),
-        ))
-    def save_mailing(self, mailing_name, subject, list_id, from_name,
-            from_address, reply_to, shared, encoding, tracking_level,
-            click_throughs=[], mailing_id=None, folder_path=None,
-            click_here_message=None, is_crm_template=None,
-            has_sp_crm_block=None, personal_from_name=None,
-            personal_from_address=None, personal_reply_to=None, html_body=None,
-            aol_body=None, text_body=None):
+        )),
+    ))
+    def save_mailing(
+            self, mailing_name, subject, list_id, from_name, from_address,
+            reply_to, shared, encoding, tracking_level, click_throughs=[],
+            mailing_id=None, folder_path=None, click_here_message=None,
+            is_crm_template=None, has_sp_crm_block=None,
+            personal_from_name=None, personal_from_address=None,
+            personal_reply_to=None, html_body=None, aol_body=None,
+            text_body=None):
         pass
 
     @api_method("GetListMetaData", definition=(
         ("LIST_ID", "list_id"),
-        ))
+    ))
     def get_list_meta_data(self, list_id):
         pass
 
@@ -240,8 +288,9 @@ class Silverpop(object):
         ("VISIBILITY", "shared"),
         ("PARENT_FOLDER_ID", "parent_folder_id"),
         ("PARENT_FOLDER_PATH", "parent_folder_path"),
-        ))
-    def create_contact_list(self, database_id, contact_list_name, shared,
+    ))
+    def create_contact_list(
+            self, database_id, contact_list_name, shared,
             parent_folder_id=None, parent_folder_path=None):
         pass
 
@@ -249,9 +298,9 @@ class Silverpop(object):
         ("CONTACT_LIST_ID", "contact_list_id"),
         ("CONTACT_ID", "contact_id"),
         ("COLUMN", "columns"),
-        ))
-    def add_contact_to_contact_list(self, contact_list_id, contact_id=None,
-            columns=None):
+    ))
+    def add_contact_to_contact_list(
+            self, contact_list_id, contact_id=None, columns=None):
         pass
 
     @api_method("SelectRecipientData", definition=(
@@ -262,8 +311,9 @@ class Silverpop(object):
         ("VISITOR_KEY", "visitor_key"),
         ("RETURN_CONTACT_LISTS", "return_contact_lists"),
         ("COLUMN", "columns"),
-        ))
-    def select_recipient_data(self, list_id, email=None, recipient_id=None,
+    ))
+    def select_recipient_data(
+            self, list_id, email=None, recipient_id=None,
             encoded_recipient_id=None, visitor_key=None,
             return_contact_lists=False, columns=None):
         pass
@@ -337,7 +387,6 @@ class Silverpop(object):
             exclude_test_mailings=None):
         pass
 
-
     @api_method("GetAggregateTrackingForMailing", definition=(
         ("MAILING_ID", "mailing_id"),
         ("REPORT_ID", "report_id"),
@@ -350,6 +399,17 @@ class Silverpop(object):
             inbox_monitoring=None, per_click=None):
         pass
 
+    @api_method("GetLists", definition=(
+        ("VISIBILITY", "visibility"),
+        ("LIST_TYPE", "list_type"),
+        ("FOLDER_ID", "folder_id"),
+        ("INCLUDE_ALL_LISTS", "include_all_lists"),
+        ("INCLUDE_TAGS", "include_tags"),
+    ))
+    def get_lists(
+            self, visibility, list_type, folder_id, include_all_lists=None,
+            include_tags=None):
+        pass
 
 
 class SilverpopResponseException(Exception):
@@ -383,11 +443,16 @@ class ApiResponse(object):
                 raise SilverpopResponseException(fault_string)
 
     def _process_node(self, element):
-        if element.text.rstrip():
+        if element.text and element.text.rstrip():
             return element.text
 
         value_dict = {}
         for value in element:
-            value_dict[value.tag] = value.text
+            if value.tag in value_dict:
+                if type(value_dict[value.tag]) != list:
+                    value_dict[value.tag] = [value_dict[value.tag]]
+                value_dict[value.tag] += [value.text]
+            else:
+                value_dict[value.tag] = value.text
 
         return value_dict
