@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
 
-from .utils import replace_in_nested_mapping, map_to_xml
+from .utils import replace_in_nested_mapping, map_to_xml, get_envelope
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,49 @@ class api_method(object):
     def _build_tree(self, **kwargs):
         definition = replace_in_nested_mapping(self.definition, kwargs)
         return map_to_xml(definition, command=self.cmd_name)
+
+
+class relational_table_api_method(api_method):
+    """
+    The InsertUpdateRelationalTable API method needs attributes in it. So
+    instead of:
+        <COLUMN>
+            <NAME></NAME>
+            <VALUE></VALUE>
+        </COLUMN>
+
+    It's
+
+        <COLUMN name=""></COLUMN>
+
+    So we need to give it its own serializer.
+    """
+    def _build_tree(self, **kwargs):
+        envelope, root = get_envelope(self.cmd_name)
+
+        table_id = kwargs.pop("table_id")
+        rows = kwargs.pop("rows")
+
+        # Add the TABLE_ID tag
+        table_id_tag = ElementTree.Element("TABLE_ID")
+        table_id_tag.text = table_id
+        root.append(table_id_tag)
+
+        # Add the ROWS tag
+        rows_tag = ElementTree.Element("ROWS")
+        root.append(rows_tag)
+
+        # Iterate over the rows.
+        for row in rows:
+            row_tag = ElementTree.Element("ROW")
+            rows_tag.append(row_tag)
+            for key, value in row.iteritems():
+                column_tag = ElementTree.Element("COLUMN")
+                column_tag.attrib['name'] = key
+                column_tag.text = value
+                row_tag.append(column_tag)
+
+        return ElementTree.tostring(envelope)
 
 
 class Silverpop(object):
@@ -409,6 +452,10 @@ class Silverpop(object):
     def get_lists(
             self, visibility, list_type, folder_id, include_all_lists=None,
             include_tags=None):
+        pass
+
+    @relational_table_api_method("InsertUpdateRelationalTable")
+    def insert_update_relational_table(self, table_id, rows):
         pass
 
 

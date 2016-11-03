@@ -24,6 +24,20 @@ def replace_in_nested_mapping(mapping, values):
     return tuple(mapping.items())
 
 
+def get_envelope(command):
+    envelope = ElementTree.Element("Envelope")
+    root = ElementTree.Element("Body")
+    envelope.append(root)
+
+    if command:
+        command = ElementTree.Element(command)
+        root.append(command)
+
+        root = command
+
+    return (envelope, root)
+
+
 def map_to_xml(mapping, root=None, command=None):
     """
     Take the nested 2-tuple mapping with values from
@@ -33,15 +47,7 @@ def map_to_xml(mapping, root=None, command=None):
     envelope = None
 
     if root is None:
-        envelope = ElementTree.Element("Envelope")
-        root = ElementTree.Element("Body")
-        envelope.append(root)
-
-        if command:
-            command = ElementTree.Element(command)
-            root.append(command)
-
-            root = command
+        envelope, root = get_envelope(command)
 
     for tag, value in mapping:
         tag = ElementTree.Element(tag)
