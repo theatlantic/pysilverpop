@@ -467,7 +467,7 @@ class ApiResponse(object):
     def __init__(self, response):
         logger.debug("Response: %s" % response.text)
         self.response_raw = response.text
-        self.response = ElementTree.fromstring(self.response_raw)
+        self.response = ElementTree.fromstring(self.response_raw.encode('utf-8'))
 
         # Very rudimentary mapping of response tags and values into the
         # instance dict. This will probably cause some problems down the line
