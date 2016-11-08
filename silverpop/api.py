@@ -485,7 +485,13 @@ class ApiResponse(object):
         results = self.response.find(".//RESULT")
         if results is not None:
             for value in results:
-                if value.tag not in self.__dict__:
+                if value.tag == "COLUMNS":
+                    self.__dict__['COLUMNS'] = {}
+                    for column in value:
+                        name = column.find("NAME")
+                        value = column.find("VALUE")
+                        self.__dict__['COLUMNS'][name.text] = value.text
+                elif value.tag not in self.__dict__:
                     self.__dict__[value.tag] = self._process_node(value)
                 else:
                     if type(self.__dict__[value.tag]) != list:
