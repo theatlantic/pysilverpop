@@ -277,6 +277,16 @@ class Silverpop(object):
     ):
         pass
 
+    @api_method("DoubleOptInRecipient", definition=(
+        ("LIST_ID", "list_id"),
+        ("SEND_AUTOREPLY", "send_autoreply"),
+        ("AUTO_HTML", "auto_html"),
+        ("COLUMN", "columns")
+    ))
+    def double_opt_in_recipient(
+            self, list_id, send_autoreply=None, auto_html=None, columns=None):
+        pass
+
     @api_method("SaveMailing", definition=(
         ("Header", (
             ("MailingName", "mailing_name"),
