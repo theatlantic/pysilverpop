@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
     name='pysilverpop',
-    version="0.0.1",
+    version="0.1.0",
     author='The Atlantic',
     author_email='programmers@theatlantic.com',
     url='https://github.com/theatlantic/pysilverpop',
