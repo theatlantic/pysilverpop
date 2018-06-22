@@ -94,7 +94,7 @@ def map_to_xml(mapping, root=None, command=None):
             # If the value isn't True/False, we can set the node's text value.
             # If the value is True, the tag will still be appended but will be
             # self-closing.
-            tag.text = str(value)
+            tag.text = u"%s" % (value)
 
         if value:
             root.append(tag)
@@ -102,4 +102,3 @@ def map_to_xml(mapping, root=None, command=None):
     if envelope is not None:
         root = envelope
     return ElementTree.tostring(root)
-
