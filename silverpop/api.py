@@ -49,7 +49,7 @@ class api_method(object):
 
         # Execute the signature-preserving wrapper function in a dict-based
         # closure and return it.
-        exec new_func in exec_scope
+        exec(new_func, exec_scope)
         new_func = exec_scope[func.__name__]
         new_func.__doc__ = self.build_doc(func)
         return new_func
@@ -65,13 +65,14 @@ class api_method(object):
 class relational_table_api_method(api_method):
     """
     The InsertUpdateRelationalTable API method needs attributes in it. So
-    instead of:
+    instead of::
+
         <COLUMN>
             <NAME></NAME>
             <VALUE></VALUE>
         </COLUMN>
 
-    It's
+    It's::
 
         <COLUMN name=""></COLUMN>
 

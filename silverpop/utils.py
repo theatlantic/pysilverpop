@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from xml.etree import ElementTree
 
+import six
+
 
 def replace_in_nested_mapping(mapping, values):
     """
@@ -84,7 +86,7 @@ def map_to_xml(mapping, root=None, command=None):
             #         <VALUE>1</VALUE>
             #     </COLUMN>
             value_list = ()
-            for column_name, column_value in value.iteritems():
+            for column_name, column_value in six.iteritems(value):
                 value_list += (((tag.tag), (("NAME", column_name), ("VALUE", column_value))),)
 
             value = map_to_xml(value_list, root)
