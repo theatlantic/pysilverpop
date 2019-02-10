@@ -1,2 +1,9 @@
-*.pyc
-docs/_build
+__pycache__/
+*~
+*.py[cod]
+docs/build
+.tox/
+.coverage
+.python-version
+venv/
+pysilverpop.egg-info
