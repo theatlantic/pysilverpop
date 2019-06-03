@@ -9,21 +9,17 @@ def replace_in_nested_mapping(mapping, values):
     Recursively replace "variable names" (strings that have the same value as
     keys in a dict) with their values in a nested 2-tuple mapping.
     """
-    mapping = OrderedDict(mapping)
+    definitions = {}
 
-    for mapping_key, mapping_value in mapping.items():
+    for (mapping_key, mapping_value) in mapping:
         if isinstance(mapping_value, tuple):
-            mapping[mapping_key] = replace_in_nested_mapping(mapping_value, values)
-            if len(mapping[mapping_key]) == 0:
-                del(mapping[mapping_key])
+            definitions[mapping_key] = replace_in_nested_mapping(mapping_value, values)
 
         if mapping_value in values:
             if values[mapping_value]:
-                mapping[mapping_key] = values[mapping_value]
-            else:
-                del(mapping[mapping_key])
+                definitions[mapping_key] = values[mapping_value]
 
-    return tuple(mapping.items())
+    return tuple(definitions.items())
 
 
 def get_envelope(command):
