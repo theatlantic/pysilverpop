@@ -14,6 +14,8 @@ def replace_in_nested_mapping(mapping, values):
     for (mapping_key, mapping_value) in mapping:
         if isinstance(mapping_value, tuple):
             definitions[mapping_key] = replace_in_nested_mapping(mapping_value, values)
+            if len(definitions[mapping_key]) ==  0:
+                del definitions[mapping_key]
 
         if mapping_value in values:
             if values[mapping_value]:
