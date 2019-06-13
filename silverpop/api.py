@@ -29,7 +29,11 @@ class api_method(object):
 
     def __call__(self, func):
         outer_self = self
-        argspec = inspect.getargspec(func)
+
+        if hasattr(inspect, 'getfullargspec'):
+            argspec = inspect.getfullargspec(func)
+        else:
+            argspec = inspect.getargspec(func)
 
         def wrapper(self, *args, **kwargs):
             # Name the args via zip and then put them in the kwargs.
@@ -40,8 +44,17 @@ class api_method(object):
 
         # Preserve the argument signature of the wrapped function.
         # fullargspec preserves the defaults while argspec does not.
-        full_argspec = inspect.formatargspec(*argspec)
-        non_default_argspec = inspect.formatargspec(argspec.args)
+        if hasattr(inspect, 'signature'):
+            func_signature = inspect.signature(func)
+            full_argspec = str(func_signature)
+            params = func_signature.parameters
+            non_default_params = [
+                params[p].replace(default=inspect.Parameter.empty)
+                for p in argspec.args]
+            non_default_argspec = "(%s)" % ', '.join([str(p) for p in non_default_params])
+        else:
+            full_argspec = inspect.formatargspec(*argspec)
+            non_default_argspec = inspect.formatargspec(argspec.args)
 
         new_func = ("def %s%s:\n"
                     "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
