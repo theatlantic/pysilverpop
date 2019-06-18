@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pysilverpop',
-    version='0.2.3',
+    version='0.2.4',
     author='The Atlantic',
     author_email='programmers@theatlantic.com',
     url='https://github.com/theatlantic/pysilverpop',
