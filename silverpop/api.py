@@ -1,5 +1,6 @@
 import inspect
 import logging
+import six
 from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
@@ -62,7 +63,7 @@ class api_method(object):
 
         # Execute the signature-preserving wrapper function in a dict-based
         # closure and return it.
-        exec(new_func, exec_scope)
+        six.exec_(new_func, exec_scope)
         new_func = exec_scope[func.__name__]
         new_func.__doc__ = self.build_doc(func)
         return new_func
