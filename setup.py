@@ -32,5 +32,5 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    test_suite='silverpop.tests',
+    test_suite='tests',
 )
