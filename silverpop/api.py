@@ -157,7 +157,7 @@ class relational_table_create(api_method):
         return col_tag  # checkr / enforce column types
 
     def _build_tree(self, **kwargs):
-        envelope, root = get_envelope(self.cmd_name)
+        envelope, root = utils.get_envelope(self.cmd_name)
 
         table_id = kwargs.pop("table_name")
         columns = kwargs.pop("columns")
@@ -205,7 +205,7 @@ class relational_table_cdata(api_method):
         return rows_tag
 
     def _build_tree(self, **kwargs):
-        envelope, root = get_envelope(self.cmd_name)
+        envelope, root = utils.get_envelope(self.cmd_name)
 
         table_id = kwargs.pop("table_id")
         rows = kwargs.pop("rows")

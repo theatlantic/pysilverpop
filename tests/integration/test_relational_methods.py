@@ -24,7 +24,7 @@ def row_value_update(sender_email_fixture,  # TODO: parametrize
             "stripe_subscription_id": recipient.stripe_subscription_id,
             "stripe_coupon_id": recipient.stripe_coupon_id,
             "recipient_stripe_customer_id": recipient.recipient_stripe_customer_id,  # noqa
-            "subscription_redeem_url": "https://testing-update.com"
+            "subscription_redeem_url": "https://testing-update-bar-cd.com"
         })
         rows.append(entry.values)
 
@@ -38,12 +38,16 @@ def test_update_relational(silverpop_client_fixture,
                            row_values_fixture,  # TMP, this is gross
                            row_value_update):  # NOT DRY
 
-    # NOTE: UNCOMMENT
+    """
+    When rows are inserted or updated in the relational table, all Column
+    values are set based on the values that are passed in the COLUMN elements.
+    IBM/customer-engagement/tutorials/insert-update-records-relational-table/
+    """
     assert row_values_fixture[0]["donor_email"] == sender_email_fixture
 
     api_response = silverpop_client_fixture.\
-        insert_update_relational_table(relational_table_id_fixture,
-                                       row_values_fixture)
+        upsert_relational_table(relational_table_id_fixture,
+                                row_values_fixture)
 
     # TODO: client.select_recipient data or if its return  does not include
     # relational data, parse client.ExportTable
