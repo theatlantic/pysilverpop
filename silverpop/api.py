@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from requests_oauthlib import OAuth2Session
 
-from .utils import replace_in_nested_mapping, map_to_xml, get_envelope
+from silverpop import utils
+
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,8 @@ class api_method(object):
             non_default_params = [
                 params[p].replace(default=inspect.Parameter.empty)
                 for p in argspec.args]
-            non_default_argspec = "(%s)" % ', '.join([str(p) for p in non_default_params])
+            non_default_argspec = "(%s)" % ', '.join(
+                [str(p) for p in non_default_params])
         else:
             full_argspec = inspect.formatargspec(*argspec)
             non_default_argspec = inspect.formatargspec(argspec.args)
@@ -72,8 +74,8 @@ class api_method(object):
         return ":API Method: ``%s``\n%s\n" % (self.cmd_name, func.__doc__ or "")
 
     def _build_tree(self, **kwargs):
-        definition = replace_in_nested_mapping(self.definition, kwargs)
-        return map_to_xml(definition, command=self.cmd_name)
+        definition = utils.replace_in_nested_mapping(self.definition, kwargs)
+        return utils.map_to_xml(definition, command=self.cmd_name)
 
 
 class relational_table_api_method(api_method):
@@ -92,8 +94,9 @@ class relational_table_api_method(api_method):
 
     So we need to give it its own serializer.
     """
+
     def _build_tree(self, **kwargs):
-        envelope, root = get_envelope(self.cmd_name)
+        envelope, root = utils.get_envelope(self.cmd_name)
 
         table_id = kwargs.pop("table_id")
         rows = kwargs.pop("rows")
@@ -331,7 +334,8 @@ class Silverpop(object):
             ("ClickThrough", "click_throughs"),
         )),
         ("ForwardToFriend", (
-            ("ForwardType", "0"),  # This is a required but static value in the API method.
+            # This is a required but static value in the API method.
+            ("ForwardType", "0"),
         )),
     ))
     def save_mailing(
@@ -492,7 +496,8 @@ class ApiResponse(object):
     def __init__(self, response):
         logger.debug("Response: %s" % response.text)
         self.response_raw = response.text
-        self.response = ElementTree.fromstring(self.response_raw.encode('utf-8'))
+        self.response = ElementTree.fromstring(
+            self.response_raw.encode('utf-8'))
 
         # Very rudimentary mapping of response tags and values into the
         # instance dict. This will probably cause some problems down the line
