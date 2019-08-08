@@ -123,6 +123,103 @@ class relational_table_api_method(api_method):
         return ElementTree.tostring(envelope)
 
 
+# PLEASE NOTE: The following are WIP, quick workarounds for exposing
+# Silverpop XML API methods
+class relational_table_create(api_method):
+    """
+    The InsertUpdateRelationalTable API method needs attributes in it. So
+    instead of::
+
+        <COLUMN>
+            <NAME></NAME>
+            <VALUE></VALUE>
+        </COLUMN>
+
+    It's::
+
+        <COLUMN name=""></COLUMN>
+
+    So we need to give it its own serializer.
+    """
+
+    @staticmethod
+    def _get_column_element(values):
+        col_tag = ElementTree.Element("COLUMN")
+        for key, value in values.items():
+            child_tag = ElementTree.Element(key.upper())
+            child_tag.text = value
+            col_tag.append(child_tag)
+
+        return col_tag  # checkr / enforce column types
+
+    def _build_tree(self, **kwargs):
+        envelope, root = get_envelope(self.cmd_name)
+
+        table_id = kwargs.pop("table_name")
+        columns = kwargs.pop("columns")
+
+        # Add the TABLE_ID tag
+        table_id_tag = ElementTree.Element("TABLE_NAME")
+        table_id_tag.text = table_id
+        root.append(table_id_tag)
+
+        # Add the COLUMNS tag
+        cols_tag = ElementTree.Element("COLUMNS")
+        root.append(cols_tag)
+
+        # Iterate over the rows.
+        for col in columns:
+            # this is a little ratchet
+            col_tag = self._get_column_element(col)
+            cols_tag.append(col_tag)
+
+        string_tree = ElementTree.tostring(envelope)
+
+        return string_tree
+
+
+# kind of defeats purpose of a wrapper
+class relational_table_cdata(api_method):
+    @staticmethod
+    def _get_row_element(row, cdata_parent_name):
+        row_tag = ElementTree.Element("ROW")
+        for key, value in row.items():
+            column_tag = ElementTree.Element(cdata_parent_name.upper())
+            column_tag.attrib['name'] = key
+
+            # XML CDATA Hack
+            cdata = utils.CDATA(column_tag, value)
+            row_tag.append(column_tag)
+        return row_tag
+
+    def _get_rows_element(self, rows, cdata_parent_name):
+        rows_tag = ElementTree.Element("ROWS")
+        for row in rows:
+            # Iterate over the rows
+            row_tag = self._get_row_element(row, cdata_parent_name)
+            rows_tag.append(row_tag)
+        return rows_tag
+
+    def _build_tree(self, **kwargs):
+        envelope, root = get_envelope(self.cmd_name)
+
+        table_id = kwargs.pop("table_id")
+        rows = kwargs.pop("rows")
+        # the name of the parent element to CDATA values
+        cdata_parent_name = kwargs.pop("cdata_parent_name")
+
+        # Add the TABLE_ID tag
+        table_id_tag = ElementTree.Element("TABLE_ID")
+        table_id_tag.text = table_id
+        root.append(table_id_tag)
+
+        # Add the ROWS tag
+        rows_tag = self._get_rows_element(rows, cdata_parent_name)
+        root.append(rows_tag)
+
+        return ElementTree.tostring(envelope, encoding="utf-8")
+
+
 class Silverpop(object):
     """
     :param str client_id: Silverpop OAuth client id.
@@ -486,6 +583,31 @@ class Silverpop(object):
     @relational_table_api_method("InsertUpdateRelationalTable")
     def insert_update_relational_table(self, table_id, rows):
         pass
+
+    # WIP: likely unnecessary
+    @utils.api_method("SendMailing", definition=(
+        ("MailingId", "mailingId"),
+        ("COLUMN", "columns"),))
+    def send_mailing_columns(self, mailingId, columns):
+        """
+        Very similar to send mailing in parent class,
+        but required an additional param to use and add columns
+        """
+        pass
+
+    @utils.relational_table_create("CreateTable")
+    def create_relational_table(self, table_name, columns):
+        pass
+
+    # WIP: do not override existing insert update relational table
+    @utils.relational_table_cdata("InsertUpdateRelationalTable")
+    def upsert_relational_table(self, table_id, rows, cdata_parent_name="column"):
+        pass
+
+    @utils.relational_table_cdata("InsertUpdateRelationalTable")
+    def delete_relational_table_data(self, table_id, rows, cdata_parent_name="key_column"):
+        pass
+
 
 
 class SilverpopResponseException(Exception):
