@@ -1,6 +1,7 @@
 """ WIP: Testing added methods """
+import pytest
 
-from silverpop.api import relational_table_create, relational_table_upsert
+from silverpop.api import relational_table_create, relational_table_api_method
 from silverpop.utils import RelationalTableEntry
 
 
@@ -11,7 +12,8 @@ def create_method_fixture():
 
 @pytest.fixture
 def upsert_method_fixture():
-    return relational_table_upsert("InsertUpdateRelationalTable")._build_tree
+    return relational_table_api_method(
+        "InsertUpdateRelationalTable")._build_tree
 
 
 @pytest.fixture

@@ -24,7 +24,7 @@ def row_value_update(sender_email_fixture,  # TODO: parametrize
             "stripe_subscription_id": recipient.stripe_subscription_id,
             "stripe_coupon_id": recipient.stripe_coupon_id,
             "recipient_stripe_customer_id": recipient.recipient_stripe_customer_id,  # noqa
-            "subscription_redeem_url": "https://testing-update-bar-cd.com"
+            "subscription_redeem_url": "https://testing-update-bar.com"
         })
         rows.append(entry.values)
 
@@ -45,14 +45,8 @@ def test_update_relational(silverpop_client_fixture,
     """
     assert row_values_fixture[0]["donor_email"] == sender_email_fixture
 
-    api_response = silverpop_client_fixture.\
-        upsert_relational_table(relational_table_id_fixture,
-                                row_values_fixture)
-
-    # TODO: client.select_recipient data or if its return  does not include
-    # relational data, parse client.ExportTable
-    assert api_response.SUCCESS.upper() == "TRUE"
-
+    # TODO: check to see if already present, if so, pass in
+    # row_values fixture; just using UI for hack for now
     api_response = silverpop_client_fixture.\
         insert_update_relational_table(relational_table_id_fixture,
                                        row_value_update)

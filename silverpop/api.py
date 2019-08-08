@@ -60,7 +60,7 @@ class api_method(object):
             non_default_argspec = "(%s)" % ', '.join(
                 [str(p) for p in non_default_params])
         else:
-            full_argspec = inspect.formatargspec(*argspec)
+            full_argspec = inspect.zformatargspec(*argspec)
             non_default_argspec = inspect.formatargspec(argspec.args)
 
         new_func = ("def %s%s:\n"
@@ -131,7 +131,7 @@ class relational_table_api_method(api_method):
 # Silverpop XML API methods
 class relational_table_create(api_method):
     """
-    The InsertUpdateRelationalTable API method needs attributes in it. So
+    The CreateTable API method needs attributes in it. So
     instead of::
 
         <COLUMN>
@@ -141,7 +141,15 @@ class relational_table_create(api_method):
 
     It's::
 
-        <COLUMN name=""></COLUMN>
+    <CreateTable>
+      <TABLE_NAME>Purchases</TABLE_NAME>
+      <COLUMNS>
+        <COLUMN>
+          <NAME>RecordId</NAME>
+          <TYPE>NUMERIC</TYPE>
+          <IS_REQUIRED>true</IS_REQUIRED>
+          <KEY_COLUMN>true</KEY_COLUMN>
+        </COLUMN>
 
     So we need to give it its own serializer.
     """
@@ -182,17 +190,14 @@ class relational_table_create(api_method):
         return string_tree
 
 
-# kind of defeats purpose of a wrapper
-class relational_table_cdata(api_method):
+class relational_table_column_method(api_method):  # TK: docs
     @staticmethod
     def _get_row_element(row, cdata_parent_name):
         row_tag = ElementTree.Element("ROW")
         for key, value in row.items():
             column_tag = ElementTree.Element(cdata_parent_name.upper())
             column_tag.attrib['name'] = key
-
-            # XML CDATA Hack
-            cdata = utils.CDATA(column_tag, value)
+            column_tag.text = value
             row_tag.append(column_tag)
         return row_tag
 
@@ -603,13 +608,9 @@ class Silverpop(object):
     def create_relational_table(self, table_name, columns):
         pass
 
-    # WIP: do not override existing insert update relational table
-    @relational_table_cdata("InsertUpdateRelationalTable")
-    def upsert_relational_table(self, table_id, rows, cdata_parent_name="column"):
-        pass
-
-    @relational_table_cdata("InsertUpdateRelationalTable")
-    def delete_relational_table_data(self, table_id, rows, cdata_parent_name="key_column"):
+    @relational_table_api_method("DeleteRelationalTableData")
+    def delete_relational_table_data(self, table_id,
+                                     rows, cdata_parent_name="key_column"):
         pass
 
 

@@ -25,6 +25,9 @@ class ColumnTypes:
 
 class RelationalTableEntry:
     def __init__(self):
+        # TODO: raise error if not all keys are in kwargs / defined -- will
+        # result in blank values on upserts and if not all key columns are
+        # present a new row will be created
         self.__keys = [
             ("donor_email", ColumnTypes.email, True),
             ("stripe_coupon_id", ColumnTypes.text, True),
@@ -70,27 +73,6 @@ class RelationalTableEntry:
             self.__values[key] = value
 
         return self.__values
-
-
-def CDATA(parent, text=None):
-    element = ElementTree.SubElement(parent, '![CDATA[')
-    element.text = text
-    return element
-
-
-ElementTree._original_serialize_xml = ElementTree._serialize_xml
-
-
-def _serialize_xml(write, elem, qnames, namespaces, **kwargs):
-    if elem.tag == '![CDATA[':
-        write("<%s%s]]>" % (elem.tag, elem.text))
-        return
-
-    return ElementTree._original_serialize_xml(
-        write, elem, qnames, namespaces, short_empty_elements=False)
-
-
-ElementTree._serialize_xml = ElementTree._serialize['xml'] = _serialize_xml
 
 
 def replace_in_nested_mapping(mapping, values):
