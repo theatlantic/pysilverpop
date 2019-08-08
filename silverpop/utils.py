@@ -1,7 +1,78 @@
-from collections import OrderedDict
+# pylint: disable=missing-docstring
+import collections
+import six
+
 from xml.etree import ElementTree
 
-import six
+
+class ColumnTypes:
+    """
+    https://developer.ibm.com/customer-engagement/tutorials/create-relational-table/
+    Please note, the 'phone number' type is only available through the UI and
+    not the XML API
+    """
+    text = "TEXT"
+    boolean = "YESNO"
+    numeric = "NUMERIC"
+    date = "DATE"
+    time = "TIME"
+    country_region = "COUNTRY"
+    selection = "SELECTION"
+    email = "EMAIL"
+    sync_id = "SYNC_ID"
+    timestamp = "DATE_TIME"
+
+
+class RelationalTableEntry:
+    def __init__(self):
+        # TODO: raise error if not all keys are in kwargs / defined -- will
+        # result in blank values on upserts and if not all key columns are
+        # present a new row will be created
+        self.__keys = [
+            ("donor_email", ColumnTypes.email, True),
+            ("stripe_coupon_id", ColumnTypes.text, True),
+            ("recipient_email", ColumnTypes.email, True),
+            ("is_gift_subscription", ColumnTypes.boolean, True),
+            ("stripe_subscription_id", ColumnTypes.text, True),
+            ("recipient_stripe_customer_id", ColumnTypes.text, True),
+            ("subscription_redeem_url", ColumnTypes.text, True)
+            # WIP -- Timestamp field format difficult to find in docs
+            # ("silverbullet_received_on", ColumnTypes.timestamp, True),
+            # ("silverbullet_sent_on", ColumnTypes.timestamp, True),
+            # ("modified_on", ColumnTypes.timestamp, True),
+            # ("created_on", ColumnTypes.timestamp, True)
+        ]
+        self.__columns = [
+            {"name": key[0], "type": key[1],
+                "is_required": "true" if key[2] else "false"}
+            for key in self.__keys
+        ]
+
+        # Please ignore this hack for now, trying key column
+        # combinations
+        # TMP -- this is obv not great
+        self.__columns[0].update({"key_column": "true"})
+        self.__columns[1].update({"key_column": "true"})  # gross
+        self.__columns[2].update({"key_column": "true"})  # gross
+
+        self.__values = collections.defaultdict()
+        [self.__values.setdefault(key[0]) for key in self.__keys]
+
+    @property
+    def columns(self):  # TODO: have pull from api option/verification
+        return self.__columns
+
+    @property
+    def values(self):  # setter
+        return dict(self.__values)
+
+    def update_values(self, **kwargs):
+        for key, value in kwargs.items():
+            if key not in self.__values:
+                raise ValueError("Key %s not in defined columns" % key)
+            self.__values[key] = value
+
+        return self.__values
 
 
 def replace_in_nested_mapping(mapping, values):
@@ -13,8 +84,9 @@ def replace_in_nested_mapping(mapping, values):
 
     for (mapping_key, mapping_value) in mapping:
         if isinstance(mapping_value, tuple):
-            definitions[mapping_key] = replace_in_nested_mapping(mapping_value, values)
-            if len(definitions[mapping_key]) ==  0:
+            definitions[mapping_key] = replace_in_nested_mapping(
+                mapping_value, values)
+            if len(definitions[mapping_key]) == 0:
                 del definitions[mapping_key]
 
         if mapping_value in values:
@@ -83,9 +155,11 @@ def map_to_xml(mapping, root=None, command=None):
             #         <NAME>a</NAME>
             #         <VALUE>1</VALUE>
             #     </COLUMN>
+
             value_list = ()
             for column_name, column_value in six.iteritems(value):
-                value_list += (((tag.tag), (("NAME", column_name), ("VALUE", column_value))),)
+                value_list += (((tag.tag), (("NAME", column_name),
+                                            ("VALUE", column_value))),)
 
             value = map_to_xml(value_list, root)
             continue
@@ -97,8 +171,16 @@ def map_to_xml(mapping, root=None, command=None):
             tag.text = u"%s" % (value)
 
         if value:
-            root.append(tag)
+            # hack for now
+            if tag.tag == "COLUMN":
+                dict_root = ElementTree.Element("COLUMNS")
+                dict_root.append(tag)
+                root.append(dict_root)
+            else:
+                root.append(tag)
 
     if envelope is not None:
         root = envelope
-    return ElementTree.tostring(root)
+
+    str_tree = ElementTree.tostring(root)
+    return str_tree
