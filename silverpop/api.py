@@ -608,7 +608,7 @@ class Silverpop(object):
     def create_relational_table(self, table_name, columns):
         pass
 
-    @relational_table_api_method("DeleteRelationalTableData")
+    @relational_table_column_method("DeleteRelationalTableData")
     def delete_relational_table_data(self, table_id,
                                      rows, cdata_parent_name="key_column"):
         pass
