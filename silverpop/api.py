@@ -1,3 +1,7 @@
+"""
+WIP -- workarounds for additions to
+::cls:: Silverpop XML API methods; very not-DRY
+"""
 import inspect
 import logging
 import six
@@ -114,7 +118,7 @@ class relational_table_api_method(api_method):
         for row in rows:
             row_tag = ElementTree.Element("ROW")
             rows_tag.append(row_tag)
-            for key, value in row.iteritems():
+            for key, value in six.iteritems(row):
                 column_tag = ElementTree.Element("COLUMN")
                 column_tag.attrib['name'] = key
                 column_tag.text = value
@@ -585,7 +589,7 @@ class Silverpop(object):
         pass
 
     # WIP: likely unnecessary
-    @utils.api_method("SendMailing", definition=(
+    @api_method("SendMailing", definition=(
         ("MailingId", "mailingId"),
         ("COLUMN", "columns"),))
     def send_mailing_columns(self, mailingId, columns):
@@ -595,16 +599,16 @@ class Silverpop(object):
         """
         pass
 
-    @utils.relational_table_create("CreateTable")
+    @relational_table_create("CreateTable")
     def create_relational_table(self, table_name, columns):
         pass
 
     # WIP: do not override existing insert update relational table
-    @utils.relational_table_cdata("InsertUpdateRelationalTable")
+    @relational_table_cdata("InsertUpdateRelationalTable")
     def upsert_relational_table(self, table_id, rows, cdata_parent_name="column"):
         pass
 
-    @utils.relational_table_cdata("InsertUpdateRelationalTable")
+    @relational_table_cdata("InsertUpdateRelationalTable")
     def delete_relational_table_data(self, table_id, rows, cdata_parent_name="key_column"):
         pass
 
