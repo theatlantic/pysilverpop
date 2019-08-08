@@ -4,8 +4,6 @@ import six
 
 from xml.etree import ElementTree
 
-from silverbullet import settings
-
 
 class ColumnTypes:
     """
