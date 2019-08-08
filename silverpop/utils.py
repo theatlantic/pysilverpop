@@ -1,6 +1,98 @@
+# pylint: disable=missing-docstring
+import collections
+import six
+
 from xml.etree import ElementTree
 
-import six
+from silverbullet import settings
+
+
+class ColumnTypes:
+    """
+    https://developer.ibm.com/customer-engagement/tutorials/create-relational-table/
+    Please note, the 'phone number' type is only available through the UI and
+    not the XML API
+    """
+    text = "TEXT"
+    boolean = "YESNO"
+    numeric = "NUMERIC"
+    date = "DATE"
+    time = "TIME"
+    country_region = "COUNTRY"
+    selection = "SELECTION"
+    email = "EMAIL"
+    sync_id = "SYNC_ID"
+    timestamp = "DATE_TIME"
+
+
+class RelationalTableEntry:
+    def __init__(self):
+        self.__keys = [
+            ("donor_email", ColumnTypes.email, True),
+            ("stripe_coupon_id", ColumnTypes.text, True),
+            ("recipient_email", ColumnTypes.email, True),
+            ("is_gift_subscription", ColumnTypes.boolean, True),
+            ("stripe_subscription_id", ColumnTypes.text, True),
+            ("recipient_stripe_customer_id", ColumnTypes.text, True),
+            ("subscription_redeem_url", ColumnTypes.text, True)
+            # WIP -- Timestamp field format difficult to find in docs
+            # ("silverbullet_received_on", ColumnTypes.timestamp, True),
+            # ("silverbullet_sent_on", ColumnTypes.timestamp, True),
+            # ("modified_on", ColumnTypes.timestamp, True),
+            # ("created_on", ColumnTypes.timestamp, True)
+        ]
+        self.__columns = [
+            {"name": key[0], "type": key[1],
+                "is_required": "true" if key[2] else "false"}
+            for key in self.__keys
+        ]
+
+        # Please ignore this hack for now, trying key column
+        # combinations
+        # TMP -- this is obv not great
+        self.__columns[0].update({"key_column": "true"})
+        self.__columns[1].update({"key_column": "true"})  # gross
+        self.__columns[2].update({"key_column": "true"})  # gross
+
+        self.__values = collections.defaultdict()
+        [self.__values.setdefault(key[0]) for key in self.__keys]
+
+    @property
+    def columns(self):  # TODO: have pull from api option/verification
+        return self.__columns
+
+    @property
+    def values(self):  # setter
+        return dict(self.__values)
+
+    def update_values(self, **kwargs):
+        for key, value in kwargs.items():
+            if key not in self.__values:
+                raise ValueError("Key %s not in defined columns" % key)
+            self.__values[key] = value
+
+        return self.__values
+
+
+def CDATA(parent, text=None):
+    element = ElementTree.SubElement(parent, '![CDATA[')
+    element.text = text
+    return element
+
+
+ElementTree._original_serialize_xml = ElementTree._serialize_xml
+
+
+def _serialize_xml(write, elem, qnames, namespaces, **kwargs):
+    if elem.tag == '![CDATA[':
+        write("<%s%s]]>" % (elem.tag, elem.text))
+        return
+
+    return ElementTree._original_serialize_xml(
+        write, elem, qnames, namespaces, short_empty_elements=False)
+
+
+ElementTree._serialize_xml = ElementTree._serialize['xml'] = _serialize_xml
 
 
 def replace_in_nested_mapping(mapping, values):
@@ -99,8 +191,16 @@ def map_to_xml(mapping, root=None, command=None):
             tag.text = u"%s" % (value)
 
         if value:
-            root.append(tag)
+            # hack for now
+            if tag.tag == "COLUMN":
+                dict_root = ElementTree.Element("COLUMNS")
+                dict_root.append(tag)
+                root.append(dict_root)
+            else:
+                root.append(tag)
 
     if envelope is not None:
         root = envelope
-    return ElementTree.tostring(root)
+
+    str_tree = ElementTree.tostring(root)
+    return str_tree
