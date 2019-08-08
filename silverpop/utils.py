@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from xml.etree import ElementTree
 
 import six
@@ -13,8 +12,9 @@ def replace_in_nested_mapping(mapping, values):
 
     for (mapping_key, mapping_value) in mapping:
         if isinstance(mapping_value, tuple):
-            definitions[mapping_key] = replace_in_nested_mapping(mapping_value, values)
-            if len(definitions[mapping_key]) ==  0:
+            definitions[mapping_key] = replace_in_nested_mapping(
+                mapping_value, values)
+            if len(definitions[mapping_key]) == 0:
                 del definitions[mapping_key]
 
         if mapping_value in values:
@@ -83,9 +83,11 @@ def map_to_xml(mapping, root=None, command=None):
             #         <NAME>a</NAME>
             #         <VALUE>1</VALUE>
             #     </COLUMN>
+
             value_list = ()
             for column_name, column_value in six.iteritems(value):
-                value_list += (((tag.tag), (("NAME", column_name), ("VALUE", column_value))),)
+                value_list += (((tag.tag), (("NAME", column_name),
+                                            ("VALUE", column_value))),)
 
             value = map_to_xml(value_list, root)
             continue
