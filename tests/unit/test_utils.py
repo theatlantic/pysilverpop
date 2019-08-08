@@ -14,36 +14,44 @@ def basic_mapping_fixture():
 
 # ========================= TestReplaceNestedMapping ==========================
 def test_basic_mapping(basic_mapping_fixture):
-    updated_mapping = replace_in_nested_mapping(mapping, {"abc": "success"})
+    updated_mapping = replace_in_nested_mapping(
+        basic_mapping_fixture, {"abc": "success"})
+    expected_mapping = (("ABC", "success"),)
 
-    assert basic_mapping_fixture == updated_mapping
+    assert expected_mapping == updated_mapping
 
 
 def test_preserve_order():
+    """
+    CURRENTLY FAILING:
+    E       AssertionError: assert (('ABC', 'suc...'DEF', 'def')) == (('ABC', 'success'),)
+    E         Left contains one more item: ('DEF', 'def')
+    E         Full diff:
+    E         - (('ABC', 'success'), ('DEF', 'def'))
+    E         + (('ABC', 'success'),)
+    """
     mapping = (("ABC", "abc"), ("DEF", "def"))
     expected_mapping = (("ABC", "success"), ("DEF", "def"))
 
     updated_mapping = replace_in_nested_mapping(mapping, {"abc": "success"})
 
-    self.assertEqual(expected_mapping, updated_mapping)
+    assert expected_mapping == updated_mapping
 
 
-def test_nested_mapping(self):
+def test_nested_mapping():
     mapping = (("ABC", (("DEF", "ghi"),)),)
     expected_mapping = (("ABC", (("DEF", "success"),)),)
 
     updated_mapping = replace_in_nested_mapping(mapping, {"ghi": "success"})
 
-    self.assertEqual(expected_mapping, updated_mapping)
+    assert expected_mapping == updated_mapping
 
 
 # ============================= TestMapToXml =================================
 
-def test_one_tag():
-    mapping = (("ABC", "abc"),)
+def test_one_tag(basic_mapping_fixture):
     expected_xml = b"<Envelope><Body><ABC>abc</ABC></Body></Envelope>"
-
-    xml = map_to_xml(mapping)
+    xml = map_to_xml(basic_mapping_fixture)
     assert expected_xml == xml
 
 
@@ -60,7 +68,7 @@ def test_list():
     expected_xml = b"<Envelope><Body><ABC><DEF>1</DEF><DEF>2</DEF></ABC></Body></Envelope>"
 
     xml = map_to_xml(mapping)
-    self.assertEqual(expected_xml, xml)
+    assert expected_xml == xml
 
 
 def test_dict():
