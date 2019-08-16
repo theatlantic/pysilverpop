@@ -111,7 +111,7 @@ class relational_table_api_method(api_method):
         for row in rows:
             row_tag = ElementTree.Element("ROW")
             rows_tag.append(row_tag)
-            for key, value in row.iteritems():
+            for key, value in six.iteritems(row):
                 column_tag = ElementTree.Element("COLUMN")
                 column_tag.attrib['name'] = key
                 column_tag.text = value
