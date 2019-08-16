@@ -64,7 +64,9 @@ class api_method(object):
             non_default_argspec = inspect.formatargspec(argspec.args)
 
         new_func = ("def %s%s:\n"
-                    "    return wrapper%s" % (func.__name__, full_argspec, non_default_argspec))
+                    "    return wrapper%s" % (func.__name__,
+                                              full_argspec,
+                                              non_default_argspec))
         exec_scope = {"wrapper": wrapper, }
 
         # Execute the signature-preserving wrapper function in a dict-based
@@ -117,12 +119,11 @@ class relational_table_api_method(api_method):
 
     def _build_tree(self, **kwargs):
         envelope, root = utils.get_envelope(self.cmd_name)
-        table_id = kwargs.pop("table_id")
-        table_name = kwargs.pop("table_name")
+        table_id = kwargs.pop("table_id", None)
+        table_name = kwargs.pop("table_name", None)
         cdata_parent_name = kwargs.pop("cdata_parent_name", None)
-        rows = kwargs.pop("rows")
-        columns = kwargs.pop("columns")
-
+        rows = kwargs.pop("rows", None)
+        columns = kwargs.pop("columns", None)
 
         if self.cmd_name == "InsertUpdateRelationalTable" \
            or self.cmd_name == "DeleteRelationalTableData":
@@ -154,7 +155,8 @@ class Silverpop(object):
     :param str client_id: Silverpop OAuth client id.
     :param str client_secret: Silverpop OAuth client secret.
     :param str refresh_token: Silverpop OAuth refersh token.
-    :param int server_number: Silverpop auth server number. Interpolated into API subdomain.
+    :param int server_number: Silverpop auth server number.
+                              Interpolated into API subdomain.
 
     The Silverpop object is a wrapper around Silverpop's XML API. Roughly, the
     wrapper's methods are underscore-spaced versions of the XML's camel-cased
@@ -542,7 +544,6 @@ class Silverpop(object):
                                      rows,
                                      cdata_parent_name="key_column"):
         pass
-
 
 
 class SilverpopResponseException(Exception):

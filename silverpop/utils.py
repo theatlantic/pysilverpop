@@ -171,16 +171,11 @@ def map_to_xml(mapping, root=None, command=None):
             tag.text = u"%s" % (value)
 
         if value:
-            # hack for now
-            if tag.tag == "COLUMN":
-                dict_root = ElementTree.Element("COLUMNS")
-                dict_root.append(tag)
-                root.append(dict_root)
-            else:
-                root.append(tag)
+            root.append(tag)
 
     if envelope is not None:
         root = envelope
 
     str_tree = ElementTree.tostring(root)
+
     return str_tree
