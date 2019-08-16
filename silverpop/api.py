@@ -60,7 +60,7 @@ class api_method(object):
             non_default_argspec = "(%s)" % ', '.join(
                 [str(p) for p in non_default_params])
         else:
-            full_argspec = inspect.zformatargspec(*argspec)
+            full_argspec = inspect.formatargspec(*argspec)
             non_default_argspec = inspect.formatargspec(argspec.args)
 
         new_func = ("def %s%s:\n"
@@ -83,119 +83,16 @@ class api_method(object):
 
 
 class relational_table_api_method(api_method):
-    """
-    The InsertUpdateRelationalTable API method needs attributes in it. So
-    instead of::
+    COLUMN_TAG = "COLUMN"
+    ROW_TAG = "ROW"
 
-        <COLUMN>
-            <NAME></NAME>
-            <VALUE></VALUE>
-        </COLUMN>
+    def _get_row_element(self, row, cdata_parent_name=None):
+        row_tag = ElementTree.Element(self.ROW_TAG)
+        for key, value in six.iteritems(row):
+            tag_value = cdata_parent_name if cdata_parent_name \
+                else self.COLUMN_TAG
 
-    It's::
-
-        <COLUMN name=""></COLUMN>
-
-    So we need to give it its own serializer.
-    """
-
-    def _build_tree(self, **kwargs):
-        envelope, root = utils.get_envelope(self.cmd_name)
-
-        table_id = kwargs.pop("table_id")
-        rows = kwargs.pop("rows")
-
-        # Add the TABLE_ID tag
-        table_id_tag = ElementTree.Element("TABLE_ID")
-        table_id_tag.text = table_id
-        root.append(table_id_tag)
-
-        # Add the ROWS tag
-        rows_tag = ElementTree.Element("ROWS")
-        root.append(rows_tag)
-
-        # Iterate over the rows.
-        for row in rows:
-            row_tag = ElementTree.Element("ROW")
-            rows_tag.append(row_tag)
-            for key, value in six.iteritems(row):
-                column_tag = ElementTree.Element("COLUMN")
-                column_tag.attrib['name'] = key
-                column_tag.text = value
-                row_tag.append(column_tag)
-
-        return ElementTree.tostring(envelope)
-
-
-# PLEASE NOTE: The following are WIP, quick workarounds for exposing
-# Silverpop XML API methods
-class relational_table_create(api_method):
-    """
-    The CreateTable API method needs attributes in it. So
-    instead of::
-
-        <COLUMN>
-            <NAME></NAME>
-            <VALUE></VALUE>
-        </COLUMN>
-
-    It's::
-
-    <CreateTable>
-      <TABLE_NAME>Purchases</TABLE_NAME>
-      <COLUMNS>
-        <COLUMN>
-          <NAME>RecordId</NAME>
-          <TYPE>NUMERIC</TYPE>
-          <IS_REQUIRED>true</IS_REQUIRED>
-          <KEY_COLUMN>true</KEY_COLUMN>
-        </COLUMN>
-
-    So we need to give it its own serializer.
-    """
-
-    @staticmethod
-    def _get_column_element(values):
-        col_tag = ElementTree.Element("COLUMN")
-        for key, value in values.items():
-            child_tag = ElementTree.Element(key.upper())
-            child_tag.text = value
-            col_tag.append(child_tag)
-
-        return col_tag  # checkr / enforce column types
-
-    def _build_tree(self, **kwargs):
-        envelope, root = utils.get_envelope(self.cmd_name)
-
-        table_id = kwargs.pop("table_name")
-        columns = kwargs.pop("columns")
-
-        # Add the TABLE_ID tag
-        table_id_tag = ElementTree.Element("TABLE_NAME")
-        table_id_tag.text = table_id
-        root.append(table_id_tag)
-
-        # Add the COLUMNS tag
-        cols_tag = ElementTree.Element("COLUMNS")
-        root.append(cols_tag)
-
-        # Iterate over the rows.
-        for col in columns:
-            # this is a little ratchet
-            col_tag = self._get_column_element(col)
-            cols_tag.append(col_tag)
-
-        string_tree = ElementTree.tostring(envelope)
-
-        return string_tree
-
-
-class relational_table_column_method(api_method):  # TK: docs
-    @staticmethod
-    def _get_row_element(row, cdata_parent_name):
-        row_tag = ElementTree.Element("ROW")
-        for key, value in row.items():
-            column_tag = ElementTree.Element(cdata_parent_name.upper())
+            column_tag = ElementTree.Element(tag_value)
             column_tag.attrib['name'] = key
             column_tag.text = value
             row_tag.append(column_tag)
@@ -209,24 +106,47 @@ class relational_table_column_method(api_method):  # TK: docs
             rows_tag.append(row_tag)
         return rows_tag
 
+    def _get_column_element(self, values):
+        col_tag = ElementTree.Element(self.COLUMN_TAG)
+        for key, value in six.iteritems(values):
+            child_tag = ElementTree.Element(key.upper())
+            child_tag.text = value
+            col_tag.append(child_tag)
+
+        return col_tag
+
     def _build_tree(self, **kwargs):
         envelope, root = utils.get_envelope(self.cmd_name)
-
         table_id = kwargs.pop("table_id")
+        table_name = kwargs.pop("table_name")
+        cdata_parent_name = kwargs.pop("cdata_parent_name", None)
         rows = kwargs.pop("rows")
-        # the name of the parent element to CDATA values
-        cdata_parent_name = kwargs.pop("cdata_parent_name")
+        columns = kwargs.pop("columns")
 
-        # Add the TABLE_ID tag
-        table_id_tag = ElementTree.Element("TABLE_ID")
-        table_id_tag.text = table_id
-        root.append(table_id_tag)
 
-        # Add the ROWS tag
-        rows_tag = self._get_rows_element(rows, cdata_parent_name)
-        root.append(rows_tag)
+        if self.cmd_name == "InsertUpdateRelationalTable" \
+           or self.cmd_name == "DeleteRelationalTableData":
+            parent_tag = ElementTree.Element(self.ROW_TAG)
 
-        return ElementTree.tostring(envelope, encoding="utf-8")
+            table_id_tag = ElementTree.Element("TABLE_ID")
+            table_id_tag.text = table_id
+            root.append(table_id_tag)
+
+            parent_tag = self._get_rows_element(rows, cdata_parent_name)
+
+        if self.cmd_name == "TableCreate":
+            parent_tag = ElementTree.Element(self.COLUMN_TAG)
+
+            table_name_tag = ElementTree.Element("TABLE_NAME")
+            table_name_tag.text = table_name  # doc
+            root.append(table_name_tag)
+
+            for col in columns:
+                parent_tag.append(self._get_column_element(col))
+
+        root.append(parent_tag)
+
+        return ElementTree.tostring(envelope)
 
 
 class Silverpop(object):
@@ -601,16 +521,26 @@ class Silverpop(object):
         """
         Very similar to send mailing in parent class,
         but required an additional param to use and add columns
+            # NOTE: BROKEN WITHOUT something in utils.map_to_xml
+            # to add the columns parent element
+            if tag.tag == "COLUMN":
+                dict_root = ElementTree.Element("COLUMNS")
+                dict_root.append(tag)
+                root.append(dict_root)
+            else:
+
         """
         pass
 
-    @relational_table_create("CreateTable")
+    @relational_table_api_method("CreateTable")
     def create_relational_table(self, table_name, columns):
         pass
 
-    @relational_table_column_method("DeleteRelationalTableData")
-    def delete_relational_table_data(self, table_id,
-                                     rows, cdata_parent_name="key_column"):
+    @relational_table_api_method("DeleteRelationalTableData")
+    def delete_relational_table_data(self,
+                                     table_id,
+                                     rows,
+                                     cdata_parent_name="key_column"):
         pass
 
 
