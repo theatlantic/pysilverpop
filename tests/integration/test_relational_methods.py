@@ -46,7 +46,8 @@ def test_update_relational(silverpop_client_fixture,
     assert row_values_fixture[0]["donor_email"] == sender_email_fixture
 
     # TODO: check to see if already present, if so, pass in
-    # row_values fixture; just using UI for hack for now
+    # row_values fixture; just using UI for hack for now, can
+    # use silverpopuser? will that give relational?
     api_response = silverpop_client_fixture.\
         insert_update_relational_table(relational_table_id_fixture,
                                        row_value_update)
