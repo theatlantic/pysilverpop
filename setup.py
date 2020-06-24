@@ -3,11 +3,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='pysilverpop',
-    version='0.2.5',
+    version='0.2.6',
     author='The Atlantic',
     author_email='programmers@theatlantic.com',
     url='https://github.com/theatlantic/pysilverpop',
-    description='Python wrapper for Silverpop.',
+    description='Python wrapper for Acoustic (formerly Silverpop).',
     packages=find_packages(),
     include_package_data=True,
     license='BSD',
