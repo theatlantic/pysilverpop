@@ -151,8 +151,8 @@ class Silverpop(object):
         retrieve an access token, even for the first grant. Generally, OAuth 2
         grants an access token and a refresh token initially.
     """
-    oauth_endpoint = "https://api%s.ibmmarketingcloud.com/oauth/token"
-    api_endpoint = "https://api%s.ibmmarketingcloud.com/XMLAPI"
+    oauth_endpoint = "https://api-campaign-us-%s.goacoustic.com/oauth/token"
+    api_endpoint = "https://api-campaign-us-%s.goacoustic.com/XMLAPI"
 
     def __init__(self, client_id, client_secret, refresh_token, server_number):
         self.oauth_endpoint = self.oauth_endpoint % server_number
