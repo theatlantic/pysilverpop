@@ -92,6 +92,11 @@ class relational_table_api_method(api_method):
 
     So we need to give it its own serializer.
     """
+
+    def __init__(self, cmd_name, definition=(), column_attr_name="COLUMN"):
+        super().__init__(cmd_name, definition)
+        self.column_attr_name = column_attr_name
+
     def _build_tree(self, **kwargs):
         envelope, root = get_envelope(self.cmd_name)
 
@@ -112,7 +117,7 @@ class relational_table_api_method(api_method):
             row_tag = ElementTree.Element("ROW")
             rows_tag.append(row_tag)
             for key, value in six.iteritems(row):
-                column_tag = ElementTree.Element("COLUMN")
+                column_tag = ElementTree.Element(self.column_attr_name)
                 column_tag.attrib['name'] = key
                 column_tag.text = value
                 row_tag.append(column_tag)
@@ -481,6 +486,12 @@ class Silverpop(object):
 
     @relational_table_api_method("InsertUpdateRelationalTable")
     def insert_update_relational_table(self, table_id, rows):
+        pass
+
+    @relational_table_api_method(
+        "DeleteRelationalTableData", column_attr_name="KEY_COLUMN"
+    )
+    def delete_relational_table_data(self, table_id, rows):
         pass
 
 
